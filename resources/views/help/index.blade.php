@@ -180,6 +180,7 @@
             padding: 10px 14px;
             border-bottom: 1px solid #f3f4f6;
             align-items: center;
+            
         }
 
         .payout-row:last-child { border-bottom: none; }
