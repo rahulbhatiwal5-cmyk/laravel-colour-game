@@ -77,6 +77,7 @@ and a complete admin panel.
 
 ```bash
 # Clone the repo
+git clone https://github.com/rahulbhatiwal5-cmyk/laravel-colour-game.git
 cd laravel-colour-game
 
 # Install dependencies
