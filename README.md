@@ -107,41 +107,6 @@ php artisan serve
 * * * * * /usr/bin/php /path-to-project/artisan schedule:run >> /dev/null 2>&1
 ```
 
----
-
-## Project Structure
-
-app/
-├── Console/Commands/
-│ └── ProcessGameRound.php # Auto round generation
-├── Http/Controllers/
-│ ├── AuthController.php # Login / Register
-│ ├── GameController.php # Game logic
-│ ├── WalletController.php # Wallet management
-│ ├── AdminController.php # Admin panel
-│ └── HelpController.php # Help center
-├── Models/
-│ ├── User.php
-│ ├── GameRound.php
-│ ├── Bet.php
-│ ├── Wallet.php
-│ ├── Transaction.php
-│ └── Query.php
-├── Services/
-│ └── GameRoundService.php # Core game logic
-routes/
-├── web.php # All routes
-├── console.php # Scheduler
-resources/views/
-├── auth/ # Login / Register
-├── game/ # Game page
-├── wallet/ # Wallet page
-├── admin/ # Admin panel
-└── help/ # Help center
-
-
----
-
 ## Game Logic
 
 Every 60 seconds:
