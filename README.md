@@ -61,7 +61,6 @@ and a complete admin panel.
 | Database   | MySQL               |
 | Realtime   | AJAX Polling        |
 | Scheduler  | Laravel Cron Job    |
-| Hosting    | Hostinger           |
 
 ---
 
