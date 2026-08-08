@@ -139,6 +139,7 @@ resources/views/
 ├── admin/ # Admin panel
 └── help/ # Help center
 
+
 ---
 
 ## Game Logic
