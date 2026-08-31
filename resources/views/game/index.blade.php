@@ -18,6 +18,7 @@
     <button class="back-btn">&#8249;</button>
     <div class="header-title">Lottery777</div>
             <div style="display:flex;align-items:center;gap:6px;">
+                <a href="{{ route('profile.show') }}" class="help-btn">Profile</a>
                 <a href="{{ route('help.index') }}" class="help-btn">Help</a>
                 <button class="help-btn" onclick="document.getElementById('logout-form').submit()">Log out</button>
                 <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:none;">

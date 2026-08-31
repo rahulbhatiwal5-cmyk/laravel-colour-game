@@ -7,6 +7,7 @@ use App\Http\Controllers\GameController;
 use App\Http\Controllers\WalletController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\HelpController;
+use App\Http\Controllers\ProfileController;
 
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -25,6 +26,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 });
 
 Route::middleware('auth')->group(function () {
+    Route::get('/profile',           [ProfileController::class, 'show'])->name('profile.show');
     Route::get('/wallet',            [WalletController::class, 'index'])->name('wallet.index');
     Route::get('/wallet/balance',    [WalletController::class, 'balance'])->name('wallet.balance');
     Route::post('/wallet/deposit',   [WalletController::class, 'depositRequest'])->name('wallet.deposit');

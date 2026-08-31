@@ -450,7 +450,7 @@
         <div class="header-top">
             <a class="back-btn" href="{{ route('game.index') }}">&#8249;</a>
             <div class="header-title">My Wallet</div>
-            <div class="header-right"></div>
+            <a class="header-right" href="{{ route('profile.show') }}" style="color:#fff;text-decoration:none;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:flex-end;">Profile</a>
         </div>
         <div class="balance-card">
             <div class="balance-label">💳 Total Balance</div>
