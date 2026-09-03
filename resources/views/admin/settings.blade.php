@@ -25,6 +25,11 @@
         .file { padding: 9px; background: #f9fafb; }
         .preview { display: block; width: 130px; height: 130px; object-fit: contain; border: 1px dashed #d1d5db; border-radius: 10px; margin: 4px 0 12px; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .coupon-row { border: 1px solid #e5e7eb; border-radius: 12px; padding: 10px; margin-bottom: 10px; }
+        .coupon-row-top { display: flex; align-items: center; gap: 8px; }
+        .coupon-row-top input { flex: 1; }
+        .remove-coupon { border: 0; background: #fee2e2; color: #b91c1c; border-radius: 8px; width: 38px; height: 38px; font-size: 18px; cursor: pointer; }
+        .add-coupon { border: 2px dashed #d1d5db; background: #f9fafb; color: #374151; border-radius: 10px; width: 100%; padding: 10px; font: 800 12px 'Nunito', sans-serif; cursor: pointer; }
         .save { width: 100%; border: 0; border-radius: 12px; padding: 14px; background: linear-gradient(135deg, var(--red), #b91c1c); color: #fff; font: 800 15px 'Nunito', sans-serif; cursor: pointer; }
         .alert { margin: 14px 12px 0; padding: 11px 13px; border-radius: 10px; font-size: 12px; font-weight: 800; }
         .success { background: #dcfce7; color: #166534; } .errors { background: #fee2e2; color: #991b1b; }
@@ -49,6 +54,32 @@
             <p>Basic information shown across the application.</p>
             <label for="app_name">App name</label>
             <input id="app_name" name="app_name" value="{{ old('app_name', $settings->get('app_name', 'Lottery777')) }}" maxlength="100">
+        </section>
+
+        <section class="module">
+            <h2>Coupon Module</h2>
+            <p>Users can apply these codes to receive a bonus after approval.</p>
+            <div id="coupon-list">
+                @forelse($coupons as $index => $coupon)
+                    <div class="coupon-row">
+                        <input type="hidden" name="coupons[{{ $index }}][id]" value="{{ $coupon->id }}">
+                        <div class="coupon-row-top">
+                            <input name="coupons[{{ $index }}][code]" value="{{ $coupon->code }}" placeholder="Coupon code" maxlength="50" required>
+                            <button type="button" class="remove-coupon" onclick="removeCoupon(this)" title="Remove coupon">×</button>
+                        </div>
+                        <div class="grid">
+                            <div><label>Bonus percentage</label><input type="number" name="coupons[{{ $index }}][bonus_percentage]" value="{{ $coupon->bonus_percentage }}" min="0.01" max="100" step="0.01" required></div>
+                            <div><label>Minimum deposit</label><input type="number" name="coupons[{{ $index }}][min_deposit]" value="{{ $coupon->min_deposit }}" min="0" step="0.01"></div>
+                            <div><label>Maximum uses</label><input type="number" name="coupons[{{ $index }}][max_uses]" value="{{ $coupon->max_uses }}" min="1" placeholder="Unlimited"></div>
+                            <div><label>Expires at</label><input type="datetime-local" name="coupons[{{ $index }}][expires_at]" value="{{ $coupon->expires_at?->format('Y-m-d\\TH:i') }}"></div>
+                        </div>
+                        <label><input type="hidden" name="coupons[{{ $index }}][active]" value="0"><input type="checkbox" name="coupons[{{ $index }}][active]" value="1" @checked($coupon->active)> Active</label>
+                        <small style="color:#6b7280;font-size:11px;">Used: {{ $coupon->used_count }}</small>
+                    </div>
+                @empty
+                @endforelse
+            </div>
+            <button type="button" class="add-coupon" onclick="addCoupon()">＋ Add another coupon</button>
         </section>
 
         <section class="module">
@@ -95,5 +126,31 @@
         <a href="{{ route('admin.settings') }}" class="nav-item active"><div class="nav-icon">⚙️</div>Settings</a>
     </nav>
 </div>
+<script>
+    let couponIndex = {{ $coupons->count() }};
+
+    function addCoupon() {
+        const row = document.createElement('div');
+        row.className = 'coupon-row';
+        row.innerHTML = `
+            <div class="coupon-row-top">
+                <input name="coupons[${couponIndex}][code]" placeholder="Coupon code" maxlength="50" required>
+                <button type="button" class="remove-coupon" onclick="removeCoupon(this)" title="Remove coupon">×</button>
+            </div>
+            <div class="grid">
+                <div><label>Bonus percentage</label><input type="number" name="coupons[${couponIndex}][bonus_percentage]" value="10" min="0.01" max="100" step="0.01" required></div>
+                <div><label>Minimum deposit</label><input type="number" name="coupons[${couponIndex}][min_deposit]" value="0" min="0" step="0.01"></div>
+                <div><label>Maximum uses</label><input type="number" name="coupons[${couponIndex}][max_uses]" min="1" placeholder="Unlimited"></div>
+                <div><label>Expires at</label><input type="datetime-local" name="coupons[${couponIndex}][expires_at]"></div>
+            </div>
+            <label><input type="hidden" name="coupons[${couponIndex}][active]" value="0"><input type="checkbox" name="coupons[${couponIndex}][active]" value="1" checked> Active</label>`;
+        document.getElementById('coupon-list').appendChild(row);
+        couponIndex++;
+    }
+
+    function removeCoupon(button) {
+        button.closest('.coupon-row').remove();
+    }
+</script>
 </body>
 </html>

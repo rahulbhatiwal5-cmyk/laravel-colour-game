@@ -95,6 +95,12 @@
                     <span class="info-label">Current Balance</span>
                     <span class="info-value">₹{{ number_format($deposit->user->wallet->balance ?? 0, 2) }}</span>
                 </div>
+                @if($deposit->coupon_code)
+                <div class="info-row">
+                    <span class="info-label">Coupon bonus</span>
+                    <span class="info-value" style="color:#138808;">{{ $deposit->coupon_code }} (+₹{{ number_format($deposit->bonus_amount, 2) }})</span>
+                </div>
+                @endif
             </div>
 
             <div class="action-btns">

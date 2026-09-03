@@ -7,7 +7,9 @@ use App\Models\GameRound;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Setting;
+use App\Models\Coupon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -78,17 +80,45 @@ class AdminController extends Controller
     // ── Deposit Approve ──
     public function approveDeposit(Transaction $transaction)
     {
-        if ($transaction->status !== 'pending') {
+        $result = DB::transaction(function () use ($transaction) {
+            $lockedTransaction = Transaction::whereKey($transaction->id)->lockForUpdate()->first();
+
+            if (!$lockedTransaction || $lockedTransaction->status !== 'pending') {
+                return 'already_processed';
+            }
+
+            $coupon = $lockedTransaction->coupon_id
+                ? Coupon::whereKey($lockedTransaction->coupon_id)->lockForUpdate()->first()
+                : null;
+
+            if ($coupon && $coupon->max_uses !== null && $coupon->used_count >= $coupon->max_uses) {
+                return 'coupon_unavailable';
+            }
+
+            $bonusAmount = (float) $lockedTransaction->bonus_amount;
+            $lockedTransaction->user->wallet()->lockForUpdate()->first()->increment(
+                'balance',
+                (float) $lockedTransaction->amount + $bonusAmount
+            );
+
+            if ($coupon) {
+                $coupon->increment('used_count');
+            }
+
+            $lockedTransaction->update(['status' => 'approved']);
+
+            return 'approved';
+        });
+
+        if ($result === 'already_processed') {
             return back()->with('error', 'Ye request already process ho chuki hai!');
         }
 
-        // Balance add karo
-        $transaction->user->wallet->increment('balance', $transaction->amount);
+        if ($result === 'coupon_unavailable') {
+            return back()->with('error', 'Coupon usage limit reached; deposit remains pending.');
+        }
 
-        // Status update karo
-        $transaction->update(['status' => 'approved']);
-
-        return back()->with('success', 'Deposit approved! ✅');
+        return back()->with('success', 'Deposit approved with bonus! ✅');
     }
 
     // ── Deposit Reject ──
@@ -237,8 +267,9 @@ class AdminController extends Controller
     public function settings()
     {
         $settings = Setting::query()->pluck('value', 'key');
+        $coupons = Coupon::latest()->get();
 
-        return view('admin.settings', compact('settings'));
+        return view('admin.settings', compact('settings', 'coupons'));
     }
 
     public function updateSettings(Request $request)
@@ -252,9 +283,19 @@ class AdminController extends Controller
             'support_phone' => ['nullable', 'string', 'max:30'],
             'support_email' => ['nullable', 'email', 'max:120'],
             'payment_qr' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'coupons' => ['nullable', 'array'],
+            'coupons.*.id' => ['nullable', 'integer'],
+            'coupons.*.code' => ['nullable', 'string', 'max:50'],
+            'coupons.*.bonus_percentage' => ['nullable', 'numeric', 'min:0.01', 'max:100'],
+            'coupons.*.min_deposit' => ['nullable', 'numeric', 'min:0'],
+            'coupons.*.max_uses' => ['nullable', 'integer', 'min:1'],
+            'coupons.*.expires_at' => ['nullable', 'date'],
+            'coupons.*.active' => ['nullable', 'boolean'],
         ]);
 
         unset($validated['payment_qr']);
+        $couponRows = $validated['coupons'] ?? null;
+        unset($validated['coupons']);
 
         foreach ($validated as $key => $value) {
             Setting::updateOrCreate(['key' => $key], ['value' => (string) $value]);
@@ -272,6 +313,45 @@ class AdminController extends Controller
             if ($oldPath && Storage::disk('public')->exists($oldPath)) {
                 Storage::disk('public')->delete($oldPath);
             }
+        }
+
+        if ($couponRows !== null) {
+            $savedCouponIds = [];
+
+            foreach ($couponRows as $couponRow) {
+                $code = strtoupper(trim($couponRow['code'] ?? ''));
+                if ($code === '') {
+                    continue;
+                }
+
+                $couponId = $couponRow['id'] ?? null;
+                $duplicate = Coupon::whereRaw('UPPER(code) = ?', [$code])
+                    ->when($couponId, fn ($query) => $query->where('id', '!=', $couponId))
+                    ->exists();
+
+                if ($duplicate) {
+                    return back()->withInput()->with('error', "Coupon code {$code} already exists.");
+                }
+
+                $coupon = $couponId ? Coupon::find($couponId) : new Coupon();
+                if (!$coupon) {
+                    continue;
+                }
+
+                $coupon->fill([
+                    'code' => $code,
+                    'bonus_percentage' => $couponRow['bonus_percentage'] ?? 10,
+                    'min_deposit' => $couponRow['min_deposit'] ?? 0,
+                    'max_uses' => $couponRow['max_uses'] ?? null,
+                    'expires_at' => $couponRow['expires_at'] ?? null,
+                    'active' => !empty($couponRow['active']),
+                ])->save();
+                $savedCouponIds[] = $coupon->id;
+            }
+
+            Coupon::when($savedCouponIds, fn ($query) => $query->whereNotIn('id', $savedCouponIds))
+                ->when(!$savedCouponIds, fn ($query) => $query)
+                ->delete();
         }
 
         return back()->with('success', 'Settings updated successfully.');

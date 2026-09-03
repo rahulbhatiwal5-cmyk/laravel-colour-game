@@ -491,7 +491,7 @@
             </div>
             <div class="tx-right">
                 <div class="tx-amount {{ in_array($tx->type, ['deposit','winning']) ? 'plus' : 'minus' }}">
-                    {{ in_array($tx->type, ['deposit','winning']) ? '+' : '-' }}₹{{ number_format($tx->amount, 2) }}
+                    {{ in_array($tx->type, ['deposit','winning']) ? '+' : '-' }}₹{{ number_format($tx->type === 'deposit' ? $tx->amount + $tx->bonus_amount : $tx->amount, 2) }}
                 </div>
                 <span class="tx-status status-{{ $tx->status }}">
                     {{ ucfirst($tx->status) }}
@@ -561,6 +561,9 @@
 
             <label class="form-label">UTR / Reference Number</label>
             <input type="text" name="utr_number" class="form-input" placeholder="UTR / Reference Number " required>
+
+            <label class="form-label">Coupon code (optional)</label>
+            <input type="text" name="coupon_code" class="form-input" placeholder="Enter coupon code">
 
             <button type="submit" class="submit-btn green">✅ Submit Request</button>
         </form>
