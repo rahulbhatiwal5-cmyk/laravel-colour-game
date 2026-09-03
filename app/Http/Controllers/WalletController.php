@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Transaction;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 
 class WalletController extends Controller
@@ -14,8 +15,14 @@ class WalletController extends Controller
         $transactions = auth()->user()->transactions()
                               ->latest()
                               ->paginate(10);
+        $paymentSettings = Setting::whereIn('key', ['payment_upi_id', 'payment_qr_path'])
+                      ->pluck('value', 'key');
+        $paymentQrPath = $paymentSettings->get('payment_qr_path');
+        $paymentQrUrl = $paymentQrPath
+            ? '/storage/' . ltrim($paymentQrPath, '/')
+            : asset('images/qr-code.png');
 
-        return view('wallet.index', compact('wallet', 'transactions'));
+        return view('wallet.index', compact('wallet', 'transactions', 'paymentSettings', 'paymentQrUrl'));
     }
 
     // ── Balance Check (AJAX) ──

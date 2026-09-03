@@ -23,6 +23,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/withdrawals/{transaction}/reject',  [AdminController::class, 'rejectWithdrawal'])->name('withdrawals.reject');
     Route::post('/result',                      [AdminController::class, 'setManualResult'])->name('result');
     Route::get('/round',                        [AdminController::class, 'currentRound'])->name('round');
+    Route::get('/settings',                     [AdminController::class, 'settings'])->name('settings');
+    Route::post('/settings',                    [AdminController::class, 'updateSettings'])->name('settings.update');
 });
 
 Route::middleware('auth')->group(function () {

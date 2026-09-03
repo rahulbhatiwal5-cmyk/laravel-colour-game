@@ -6,9 +6,11 @@ use App\Models\Bet;
 use App\Models\GameRound;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
 {
@@ -230,6 +232,49 @@ class AdminController extends Controller
     {
         $queries = \App\Models\Query::latest()->paginate(20);
         return view('admin.queries', compact('queries'));
+    }
+
+    public function settings()
+    {
+        $settings = Setting::query()->pluck('value', 'key');
+
+        return view('admin.settings', compact('settings'));
+    }
+
+    public function updateSettings(Request $request)
+    {
+        $validated = $request->validate([
+            'app_name' => ['nullable', 'string', 'max:100'],
+            'payment_upi_id' => ['required', 'string', 'max:120'],
+            'min_deposit' => ['required', 'numeric', 'min:1'],
+            'min_withdrawal' => ['required', 'numeric', 'min:1'],
+            'round_duration' => ['required', 'integer', 'min:10', 'max:3600'],
+            'support_phone' => ['nullable', 'string', 'max:30'],
+            'support_email' => ['nullable', 'email', 'max:120'],
+            'payment_qr' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+        ]);
+
+        unset($validated['payment_qr']);
+
+        foreach ($validated as $key => $value) {
+            Setting::updateOrCreate(['key' => $key], ['value' => (string) $value]);
+        }
+
+        if ($request->hasFile('payment_qr')) {
+            $oldPath = Setting::where('key', 'payment_qr_path')->value('value');
+            $newPath = $request->file('payment_qr')->store('payment/qr-codes', 'public');
+
+            Setting::updateOrCreate(
+                ['key' => 'payment_qr_path'],
+                ['value' => $newPath]
+            );
+
+            if ($oldPath && Storage::disk('public')->exists($oldPath)) {
+                Storage::disk('public')->delete($oldPath);
+            }
+        }
+
+        return back()->with('success', 'Settings updated successfully.');
     }
 
 }

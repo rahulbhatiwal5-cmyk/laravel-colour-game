@@ -538,8 +538,8 @@
 
         <!-- QR Code -->
         <div class="qr-box">
-            <img src="{{ asset('images/qr-code.png') }}" alt="QR Code">
-            <div class="qr-upi">UPI ID: <span id="upiId">prakasao482@ptaxis</span></div>
+            <img src="{{ $paymentQrUrl }}" alt="QR Code">
+            <div class="qr-upi">UPI ID: <span id="upiId">{{ $paymentSettings->get('payment_upi_id', 'prakasao482@ptaxis') }}</span></div>
             <button class="copy-btn" onclick="copyUPI()">📋 Copy UPI ID</button>
         </div>
 
