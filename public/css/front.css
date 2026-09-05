@@ -163,18 +163,23 @@
             justify-content: center;
             padding: 18px;
             background: rgba(15, 23, 42, 0.58);
+            overflow-y: auto;
         }
 
         .help-overlay.show { display: flex; }
 
         .help-popup {
             position: relative;
-            width: min(100%, 360px);
+            width: min(360px, calc(100vw - 36px));
+            max-height: calc(100vh - 36px);
             padding: 24px 20px 20px;
             border-radius: 18px;
             background: #fff;
             box-shadow: 0 18px 45px rgba(15, 23, 42, 0.24);
             animation: helpPopIn .22s ease-out;
+            box-sizing: border-box;
+            overflow-y: auto;
+            overflow-wrap: anywhere;
         }
 
         @keyframes helpPopIn {
@@ -554,18 +559,33 @@
         .pagination-wide { min-width: 72px; }
 
         @media (max-width: 420px) {
+            .help-overlay { padding: 12px; }
+
+            .help-popup {
+                width: calc(100vw - 24px);
+                max-height: calc(100vh - 24px);
+                padding: 20px 16px 16px;
+            }
+
+            .help-popup-intro,
+            .help-step,
+            .help-full-link { font-size: 11px; }
+
             .pagination-wrap {
-                gap: 4px;
+                display: grid;
+                grid-template-columns: repeat(5, minmax(0, 1fr));
+                gap: 5px;
                 padding: 12px 8px;
             }
 
             .pagination-item {
+                width: 100%;
                 min-width: 32px;
                 height: 32px;
                 padding: 0 6px;
             }
 
-            .pagination-wide { min-width: 64px; }
+            .pagination-wide { min-width: 0; }
         }
 
         .color-dot {
