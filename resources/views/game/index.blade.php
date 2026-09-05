@@ -62,7 +62,7 @@
     <div class="game-card">
         <div class="game-card-inner">
             <div class="game-left">
-                <span class="how-to-play">❓ How to play</span>
+                <button type="button" class="how-to-play" onclick="openHelp()">❓ How to play</button>
                 <div style="font-size:11px;opacity:0.8;margin-bottom:6px;">Recent Results</div>
                 <div class="recent-results" id="recentResults">
                     @foreach($recentRounds->take(6) as $r)
@@ -152,28 +152,28 @@
 
 <!-- Pagination -->
 @if($recentRounds->hasPages())
-<div style="display:flex;justify-content:center;gap:6px;padding:12px;">
+<div class="pagination-wrap" aria-label="Pagination">
     {{-- Prev --}}
     @if($recentRounds->onFirstPage())
-        <span style="padding:6px 12px;border-radius:8px;background:#f3f4f6;color:#9ca3af;font-size:12px;font-weight:800;">← Prev</span>
+        <span class="pagination-item pagination-wide disabled">← Prev</span>
     @else
-        <a href="{{ $recentRounds->previousPageUrl() }}" style="padding:6px 12px;border-radius:8px;background:#fff;border:1.5px solid #e5e7eb;color:#555;font-size:12px;font-weight:800;text-decoration:none;">← Prev</a>
+        <a href="{{ $recentRounds->previousPageUrl() }}" class="pagination-item pagination-wide">← Prev</a>
     @endif
 
     {{-- Page Numbers --}}
     @foreach($recentRounds->getUrlRange(1, $recentRounds->lastPage()) as $page => $url)
         @if($page == $recentRounds->currentPage())
-            <span style="padding:6px 12px;border-radius:8px;background:#e8192c;color:#fff;font-size:12px;font-weight:800;">{{ $page }}</span>
+            <span class="pagination-item active">{{ $page }}</span>
         @else
-            <a href="{{ $url }}" style="padding:6px 12px;border-radius:8px;background:#fff;border:1.5px solid #e5e7eb;color:#555;font-size:12px;font-weight:800;text-decoration:none;">{{ $page }}</a>
+            <a href="{{ $url }}" class="pagination-item">{{ $page }}</a>
         @endif
     @endforeach
 
     {{-- Next --}}
     @if($recentRounds->hasMorePages())
-        <a href="{{ $recentRounds->nextPageUrl() }}" style="padding:6px 12px;border-radius:8px;background:#fff;border:1.5px solid #e5e7eb;color:#555;font-size:12px;font-weight:800;text-decoration:none;">Next →</a>
+        <a href="{{ $recentRounds->nextPageUrl() }}" class="pagination-item pagination-wide">Next →</a>
     @else
-        <span style="padding:6px 12px;border-radius:8px;background:#f3f4f6;color:#9ca3af;font-size:12px;font-weight:800;">Next →</span>
+        <span class="pagination-item pagination-wide disabled">Next →</span>
     @endif
 </div>
 @endif
@@ -194,13 +194,28 @@
 
 </div><!-- end .app -->
 
+<!-- HOW TO PLAY POPUP -->
+<div class="help-overlay" id="helpModal" onclick="closeHelp(event)">
+    <div class="help-popup" role="dialog" aria-modal="true" aria-labelledby="helpPopupTitle">
+        <button type="button" class="help-popup-close" onclick="closeHelp()" aria-label="Close help">✕</button>
+        <div class="help-popup-icon">🎮</div>
+        <h2 id="helpPopupTitle">How to Play</h2>
+        <p class="help-popup-intro">Choose your prediction before the timer reaches zero.</p>
+        <div class="help-steps">
+            <div class="help-step"><span>1</span><p>Select a color, number, or Big / Small.</p></div>
+            <div class="help-step"><span>2</span><p>Choose a multiplier and enter your bet amount.</p></div>
+            <div class="help-step"><span>3</span><p>Confirm your bet and wait for the result.</p></div>
+        </div>
+        <a href="{{ route('help.index') }}" class="help-full-link">View Full Help →</a>
+    </div>
+</div>
+
 <!-- RESULT POPUP -->
 <div class="result-overlay" id="resultOverlay">
     <div class="result-box" id="resultBox">
         <div class="result-emoji"  id="resultEmoji"></div>
-        <div class="result-title"  id="resultTitle"></div>
         <div class="result-inner-box" id="resultInnerBox">
-            <div class="result-number" id="resultNumber"></div>
+            <div class="result-title"  id="resultTitle"></div>
             <div class="result-amount" id="resultAmount"></div>
         </div>
         <div class="result-balance-box">
@@ -349,7 +364,6 @@ function checkLock() {
                 const emoji   = document.getElementById('resultEmoji');
                 const title   = document.getElementById('resultTitle');
                 const innerBox = document.getElementById('resultInnerBox');
-                const number  = document.getElementById('resultNumber');
                 const amount  = document.getElementById('resultAmount');
                 const balance = document.getElementById('resultBalance');
                 const closeBtn = document.getElementById('resultCloseBtn');
@@ -359,22 +373,19 @@ function checkLock() {
                     title.textContent      = 'You Won! 🏆';
                     title.className        = 'result-title win';
                     innerBox.className     = 'result-inner-box win';
-                    number.className       = 'result-number win';
                     amount.className       = 'result-amount win';
                     amount.textContent     = '+₹' + data.winning_amount;
                     closeBtn.className     = 'result-close-btn win';
                 } else {
                     emoji.textContent      = '😢';
-                    title.textContent      = 'Better Luck!';
+                    title.textContent      = 'You Lost';
                     title.className        = 'result-title lose';
                     innerBox.className     = 'result-inner-box lose';
-                    number.className       = 'result-number lose';
                     amount.className       = 'result-amount lose';
                     amount.textContent     = '-₹' + data.amount;
                     closeBtn.className     = 'result-close-btn lose';
                 }
 
-                number.textContent  = data.result_number;
                 balance.textContent = data.new_balance;
 
                 // Popup show karo
@@ -560,9 +571,12 @@ function checkLock() {
 
 
 function closeHelp(e) {
-    if (e.target === document.getElementById('helpModal')) {
-        document.getElementById('helpModal').classList.remove('show');
-    }
+    const helpModal = document.getElementById('helpModal');
+    if (!e || e.target === helpModal) helpModal.classList.remove('show');
+}
+
+function openHelp() {
+    document.getElementById('helpModal').classList.add('show');
 }
     // Init
     updateTimerUI(secondsLeft);

@@ -144,6 +144,7 @@
             background: rgba(255,255,255,0.2);
             border: 1.5px solid rgba(255,255,255,0.5);
             color: #fff;
+            font-family: 'Nunito', sans-serif;
             border-radius: 20px;
             padding: 5px 12px;
             font-size: 11px;
@@ -151,6 +152,117 @@
             cursor: pointer;
             margin-bottom: 10px;
             display: inline-block;
+        }
+
+        .help-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 110;
+            align-items: center;
+            justify-content: center;
+            padding: 18px;
+            background: rgba(15, 23, 42, 0.58);
+        }
+
+        .help-overlay.show { display: flex; }
+
+        .help-popup {
+            position: relative;
+            width: min(100%, 360px);
+            padding: 24px 20px 20px;
+            border-radius: 18px;
+            background: #fff;
+            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.24);
+            animation: helpPopIn .22s ease-out;
+        }
+
+        @keyframes helpPopIn {
+            from { transform: translateY(8px) scale(.97); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+
+        .help-popup-icon {
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+            border-radius: 12px;
+            background: #fff1f2;
+            font-size: 23px;
+        }
+
+        .help-popup h2 {
+            margin: 0;
+            color: #1f2937;
+            font-family: 'Baloo 2', cursive;
+            font-size: 24px;
+            line-height: 1.1;
+        }
+
+        .help-popup-intro {
+            margin: 5px 0 16px;
+            color: #6b7280;
+            font-size: 12px;
+            font-weight: 700;
+            line-height: 1.5;
+        }
+
+        .help-popup-close {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            width: 30px;
+            height: 30px;
+            border: 0;
+            border-radius: 50%;
+            background: #f3f4f6;
+            color: #6b7280;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .help-steps {
+            display: grid;
+            gap: 10px;
+        }
+
+        .help-step {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #374151;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .help-step span {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #e8192c;
+            color: #fff;
+            font-size: 11px;
+        }
+
+        .help-step p { margin: 0; line-height: 1.4; }
+
+        .help-full-link {
+            display: block;
+            margin-top: 18px;
+            padding: 11px 14px;
+            border-radius: 10px;
+            background: #e8192c;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 900;
+            text-align: center;
+            text-decoration: none;
         }
 
         .recent-results {
@@ -246,17 +358,16 @@
 
         /* ── Number Balls ── */
         .number-grid {
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
             gap: 7px;
             padding: 12px 12px 0;
-            overflow-x: auto;
-            scrollbar-width: none;
         }
-        .number-grid::-webkit-scrollbar { display: none; }
 
         .num-ball {
-            flex-shrink: 0;
+            justify-self: center;
             width: 50px; height: 50px;
+            max-width: 100%;
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             font-size: 19px; font-weight: 900;
@@ -276,7 +387,7 @@
         /* ── Multiplier ── */
         .multiplier-row {
             display: flex;
-            gap: 6px;
+            gap: 15px;
             padding: 10px 12px 0;
             overflow-x: auto;
             scrollbar-width: none;
@@ -394,6 +505,68 @@
         }
 
         .period-id { color: #9ca3af !important; font-size: 10px !important; }
+
+        .pagination-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            padding: 14px 12px;
+        }
+
+        .pagination-item {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 34px;
+            height: 34px;
+            padding: 0 8px;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 8px;
+            background: #fff;
+            color: #555;
+            font-size: 12px;
+            font-weight: 800;
+            line-height: 1;
+            text-decoration: none;
+            box-sizing: border-box;
+            transition: border-color .2s, color .2s, background .2s;
+        }
+
+        .pagination-item:hover {
+            border-color: #e8192c;
+            color: #e8192c;
+        }
+
+        .pagination-item.active {
+            border-color: #e8192c;
+            background: #e8192c;
+            color: #fff;
+        }
+
+        .pagination-item.disabled {
+            border-color: #f3f4f6;
+            background: #f3f4f6;
+            color: #9ca3af;
+        }
+
+        .pagination-wide { min-width: 72px; }
+
+        @media (max-width: 420px) {
+            .pagination-wrap {
+                gap: 4px;
+                padding: 12px 8px;
+            }
+
+            .pagination-item {
+                min-width: 32px;
+                height: 32px;
+                padding: 0 6px;
+            }
+
+            .pagination-wide { min-width: 64px; }
+        }
 
         .color-dot {
             width: 13px; height: 13px;
@@ -612,9 +785,10 @@
 
         .result-title {
             font-family: 'Baloo 2', cursive;
-            font-size: 26px;
+            font-size: 30px;
             font-weight: 800;
-            margin-bottom: 4px;
+            line-height: 1.1;
+            margin-bottom: 6px;
         }
 
         .result-title.win  { color: #16a34a; }
@@ -622,21 +796,12 @@
 
         .result-inner-box {
             border-radius: 14px;
-            padding: 14px;
+            padding: 20px 14px;
             margin: 12px 0;
         }
 
         .result-inner-box.win  { background: #dcfce7; }
         .result-inner-box.lose { background: #fee2e2; }
-
-        .result-number {
-            font-family: 'Baloo 2', cursive;
-            font-size: 42px;
-            font-weight: 800;
-        }
-
-        .result-number.win  { color: #16a34a; }
-        .result-number.lose { color: var(--red); }
 
         .result-amount {
             font-size: 15px;
