@@ -232,28 +232,68 @@
         }
 
         /* Pagination */
-        .pagination {
+        .pagination-wrap {
             display: flex;
+            flex-wrap: wrap;
             justify-content: center;
+            align-items: center;
             gap: 6px;
             padding: 14px 12px;
         }
 
-        .pagination a, .pagination span {
-            padding: 6px 12px;
+        .pagination-item {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 34px;
+            height: 34px;
+            padding: 0 8px;
+            border: 1.5px solid #e5e7eb;
             border-radius: 8px;
+            background: #fff;
+            color: #555;
             font-size: 12px;
             font-weight: 800;
+            line-height: 1;
             text-decoration: none;
-            color: #555;
-            background: #fff;
-            border: 1.5px solid #e5e7eb;
+            transition: border-color .2s, color .2s, background .2s;
         }
 
-        .pagination .active-page {
+        .pagination-item:hover {
+            border-color: var(--red);
+            color: var(--red);
+        }
+
+        .pagination-item.active {
             background: var(--red);
             color: #fff;
             border-color: var(--red);
+        }
+
+        .pagination-item.disabled {
+            border-color: #f3f4f6;
+            background: #f3f4f6;
+            color: #9ca3af;
+        }
+
+        .pagination-wide { min-width: 72px; }
+
+        @media (max-width: 420px) {
+            .pagination-wrap {
+                display: grid;
+                grid-template-columns: repeat(5, minmax(0, 1fr));
+                gap: 5px;
+                padding: 12px 8px;
+            }
+
+            .pagination-item {
+                width: 100%;
+                min-width: 32px;
+                height: 32px;
+                padding: 0 6px;
+            }
+
+            .pagination-wide { min-width: 0; }
         }
 
         /* ── Modal ── */
@@ -512,25 +552,25 @@
 
     <!-- PAGINATION -->
     @if($transactions->hasPages())
-    <div class="pagination">
+    <div class="pagination-wrap" aria-label="Pagination">
         @if($transactions->onFirstPage())
-            <span>← Prev</span>
+            <span class="pagination-item pagination-wide disabled">← Prev</span>
         @else
-            <a href="{{ $transactions->previousPageUrl() }}">← Prev</a>
+            <a href="{{ $transactions->previousPageUrl() }}" class="pagination-item pagination-wide">← Prev</a>
         @endif
 
         @foreach($transactions->getUrlRange(1, $transactions->lastPage()) as $page => $url)
             @if($page == $transactions->currentPage())
-                <span class="active-page">{{ $page }}</span>
+                <span class="pagination-item active">{{ $page }}</span>
             @else
-                <a href="{{ $url }}">{{ $page }}</a>
+                <a href="{{ $url }}" class="pagination-item">{{ $page }}</a>
             @endif
         @endforeach
 
         @if($transactions->hasMorePages())
-            <a href="{{ $transactions->nextPageUrl() }}">Next →</a>
+            <a href="{{ $transactions->nextPageUrl() }}" class="pagination-item pagination-wide">Next →</a>
         @else
-            <span>Next →</span>
+            <span class="pagination-item pagination-wide disabled">Next →</span>
         @endif
     </div>
     @endif
