@@ -265,6 +265,8 @@
             z-index: 100;
             align-items: flex-end;
             justify-content: center;
+            padding-top: 12px;
+            overflow-y: auto;
         }
 
         .modal-overlay.show { display: flex; }
@@ -273,10 +275,15 @@
             background: #fff;
             width: 100%;
             max-width: 430px;
+            max-height: calc(100vh - 12px);
+            max-height: calc(100dvh - 12px);
             border-radius: 22px 22px 0 0;
-            padding: 22px 20px 30px;
+            padding: 22px 20px calc(30px + env(safe-area-inset-bottom));
             animation: slideUp 0.28s ease;
             position: relative;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
         }
 
         @keyframes slideUp {
