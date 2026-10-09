@@ -7,6 +7,7 @@ use App\Http\Controllers\GameController;
 use App\Http\Controllers\WalletController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\HelpController;
+use App\Http\Controllers\ProfileController;
 
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -22,9 +23,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/withdrawals/{transaction}/reject',  [AdminController::class, 'rejectWithdrawal'])->name('withdrawals.reject');
     Route::post('/result',                      [AdminController::class, 'setManualResult'])->name('result');
     Route::get('/round',                        [AdminController::class, 'currentRound'])->name('round');
+    Route::get('/settings',                     [AdminController::class, 'settings'])->name('settings');
+    Route::post('/settings',                    [AdminController::class, 'updateSettings'])->name('settings.update');
 });
 
 Route::middleware('auth')->group(function () {
+    Route::get('/profile',           [ProfileController::class, 'show'])->name('profile.show');
     Route::get('/wallet',            [WalletController::class, 'index'])->name('wallet.index');
     Route::get('/wallet/balance',    [WalletController::class, 'balance'])->name('wallet.balance');
     Route::post('/wallet/deposit',   [WalletController::class, 'depositRequest'])->name('wallet.deposit');

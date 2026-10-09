@@ -232,28 +232,68 @@
         }
 
         /* Pagination */
-        .pagination {
+        .pagination-wrap {
             display: flex;
+            flex-wrap: wrap;
             justify-content: center;
+            align-items: center;
             gap: 6px;
             padding: 14px 12px;
         }
 
-        .pagination a, .pagination span {
-            padding: 6px 12px;
+        .pagination-item {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 34px;
+            height: 34px;
+            padding: 0 8px;
+            border: 1.5px solid #e5e7eb;
             border-radius: 8px;
+            background: #fff;
+            color: #555;
             font-size: 12px;
             font-weight: 800;
+            line-height: 1;
             text-decoration: none;
-            color: #555;
-            background: #fff;
-            border: 1.5px solid #e5e7eb;
+            transition: border-color .2s, color .2s, background .2s;
         }
 
-        .pagination .active-page {
+        .pagination-item:hover {
+            border-color: var(--red);
+            color: var(--red);
+        }
+
+        .pagination-item.active {
             background: var(--red);
             color: #fff;
             border-color: var(--red);
+        }
+
+        .pagination-item.disabled {
+            border-color: #f3f4f6;
+            background: #f3f4f6;
+            color: #9ca3af;
+        }
+
+        .pagination-wide { min-width: 72px; }
+
+        @media (max-width: 420px) {
+            .pagination-wrap {
+                display: grid;
+                grid-template-columns: repeat(5, minmax(0, 1fr));
+                gap: 5px;
+                padding: 12px 8px;
+            }
+
+            .pagination-item {
+                width: 100%;
+                min-width: 32px;
+                height: 32px;
+                padding: 0 6px;
+            }
+
+            .pagination-wide { min-width: 0; }
         }
 
         /* ── Modal ── */
@@ -265,6 +305,8 @@
             z-index: 100;
             align-items: flex-end;
             justify-content: center;
+            padding-top: 12px;
+            overflow-y: auto;
         }
 
         .modal-overlay.show { display: flex; }
@@ -273,10 +315,15 @@
             background: #fff;
             width: 100%;
             max-width: 430px;
+            max-height: calc(100vh - 12px);
+            max-height: calc(100dvh - 12px);
             border-radius: 22px 22px 0 0;
-            padding: 22px 20px 30px;
+            padding: 22px 20px calc(30px + env(safe-area-inset-bottom));
             animation: slideUp 0.28s ease;
             position: relative;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
         }
 
         @keyframes slideUp {
@@ -450,7 +497,7 @@
         <div class="header-top">
             <a class="back-btn" href="{{ route('game.index') }}">&#8249;</a>
             <div class="header-title">My Wallet</div>
-            <div class="header-right"></div>
+            <a class="header-right" href="{{ route('profile.show') }}" style="color:#fff;text-decoration:none;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:flex-end;">Profile</a>
         </div>
         <div class="balance-card">
             <div class="balance-label">💳 Total Balance</div>
@@ -491,7 +538,7 @@
             </div>
             <div class="tx-right">
                 <div class="tx-amount {{ in_array($tx->type, ['deposit','winning']) ? 'plus' : 'minus' }}">
-                    {{ in_array($tx->type, ['deposit','winning']) ? '+' : '-' }}₹{{ number_format($tx->amount, 2) }}
+                    {{ in_array($tx->type, ['deposit','winning']) ? '+' : '-' }}₹{{ number_format($tx->type === 'deposit' ? $tx->amount + $tx->bonus_amount : $tx->amount, 2) }}
                 </div>
                 <span class="tx-status status-{{ $tx->status }}">
                     {{ ucfirst($tx->status) }}
@@ -505,25 +552,25 @@
 
     <!-- PAGINATION -->
     @if($transactions->hasPages())
-    <div class="pagination">
+    <div class="pagination-wrap" aria-label="Pagination">
         @if($transactions->onFirstPage())
-            <span>← Prev</span>
+            <span class="pagination-item pagination-wide disabled">← Prev</span>
         @else
-            <a href="{{ $transactions->previousPageUrl() }}">← Prev</a>
+            <a href="{{ $transactions->previousPageUrl() }}" class="pagination-item pagination-wide">← Prev</a>
         @endif
 
         @foreach($transactions->getUrlRange(1, $transactions->lastPage()) as $page => $url)
             @if($page == $transactions->currentPage())
-                <span class="active-page">{{ $page }}</span>
+                <span class="pagination-item active">{{ $page }}</span>
             @else
-                <a href="{{ $url }}">{{ $page }}</a>
+                <a href="{{ $url }}" class="pagination-item">{{ $page }}</a>
             @endif
         @endforeach
 
         @if($transactions->hasMorePages())
-            <a href="{{ $transactions->nextPageUrl() }}">Next →</a>
+            <a href="{{ $transactions->nextPageUrl() }}" class="pagination-item pagination-wide">Next →</a>
         @else
-            <span>Next →</span>
+            <span class="pagination-item pagination-wide disabled">Next →</span>
         @endif
     </div>
     @endif
@@ -538,8 +585,8 @@
 
         <!-- QR Code -->
         <div class="qr-box">
-            <img src="{{ asset('images/qr-code.png') }}" alt="QR Code">
-            <div class="qr-upi">UPI ID: <span id="upiId">prakasao482@ptaxis</span></div>
+            <img src="{{ $paymentQrUrl }}" alt="QR Code">
+            <div class="qr-upi">UPI ID: <span id="upiId">{{ $paymentSettings->get('payment_upi_id', 'prakasao482@ptaxis') }}</span></div>
             <button class="copy-btn" onclick="copyUPI()">📋 Copy UPI ID</button>
         </div>
 
@@ -561,6 +608,9 @@
 
             <label class="form-label">UTR / Reference Number</label>
             <input type="text" name="utr_number" class="form-input" placeholder="UTR / Reference Number " required>
+
+            <label class="form-label">Coupon code (optional)</label>
+            <input type="text" name="coupon_code" class="form-input" placeholder="Enter coupon code">
 
             <button type="submit" class="submit-btn green">✅ Submit Request</button>
         </form>

@@ -343,6 +343,10 @@
             <div class="nav-icon">📩</div>
             <div class="nav-label">Queries</div>
         </a>
+        <a href="{{ route('admin.settings') }}" class="nav-item">
+            <div class="nav-icon">⚙️</div>
+            <div class="nav-label">Settings</div>
+        </a>
     </div>
 <div class="toast" id="toast"></div>
 
